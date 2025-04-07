@@ -211,6 +211,38 @@ LJLIB_CF(math_randomseed)
   return 0;
 }
 
+LJLIB_CF(math_i32mod)
+{
+  int32_t num = lj_lib_checkint(L, 1);
+  int32_t den = lj_lib_checkint(L, 2);
+  int32_t res;
+  if (LJ_UNLIKELY(0 == den || (-1 == den && (-2147483647-1) == num))) {
+    res = 0;
+  } else {
+    res = num % den;
+  }
+
+  setintV(L->top++, res);
+  return 1;
+}
+LJLIB_ASM(math_i32mul)		LJLIB_REC(.)
+{
+#if LJ_DUALNUM && !LJ_TARGET_X86ORX64 // DUALNUM platforms, narrow directly to an int.
+  lj_lib_checkint(L, 1);
+  lj_lib_checkint(L, 2);
+#else // Otherwise, just checking.
+  lj_lib_checknum(L, 1);
+  lj_lib_checknum(L, 2);
+#endif
+
+  return FFH_RETRY;
+}
+LJLIB_ASM(math_i32truncate)		LJLIB_REC(.)
+{
+  lj_lib_checknum(L, 1);
+
+  return FFH_RETRY;
+}
 /* ------------------------------------------------------------------------ */
 
 #include "lj_libdef.h"

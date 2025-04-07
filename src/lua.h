@@ -51,7 +51,8 @@
 typedef struct lua_State lua_State;
 
 typedef int (*lua_CFunction) (lua_State *L);
-
+typedef void (*lua_PreFreeUdFunction) (void* p, unsigned int ud);
+typedef int (*lua_PreCollectWeakUd) (void* p, unsigned int ud);
 
 /*
 ** functions that read/write blocks when loading/dumping Lua chunks
@@ -109,6 +110,7 @@ typedef LUA_INTEGER lua_Integer;
 ** state manipulation
 */
 LUA_API lua_State *(lua_newstate) (lua_Alloc f, void *ud);
+LUA_API lua_State *(lua_newstateex) (lua_Alloc, void*, lua_PreFreeUdFunction, lua_PreCollectWeakUd);
 LUA_API void       (lua_close) (lua_State *L);
 LUA_API lua_State *(lua_newthread) (lua_State *L);
 
@@ -181,6 +183,7 @@ LUA_API void  (lua_rawget) (lua_State *L, int idx);
 LUA_API void  (lua_rawgeti) (lua_State *L, int idx, int n);
 LUA_API void  (lua_createtable) (lua_State *L, int narr, int nrec);
 LUA_API void *(lua_newuserdata) (lua_State *L, size_t sz);
+LUA_API void *(lua_newuserdataex) (lua_State *L, size_t sz, unsigned int userprivatedata);
 LUA_API int   (lua_getmetatable) (lua_State *L, int objindex);
 LUA_API void  (lua_getfenv) (lua_State *L, int idx);
 

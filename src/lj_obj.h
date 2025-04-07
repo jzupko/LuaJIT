@@ -312,7 +312,7 @@ typedef struct GCudata {
   GCRef env;		/* Should be at same offset in GCfunc. */
   MSize len;		/* Size of payload. */
   GCRef metatable;	/* Must be at same offset in GCtab. */
-  uint32_t align1;	/* To force 8 byte alignment of the payload. */
+  uint32_t userprivatedata;
 } GCudata;
 
 /* Userdata types. */
@@ -621,6 +621,8 @@ typedef struct global_State {
   MRef jit_base;	/* Current JIT code L->base or NULL. */
   MRef ctype_state;	/* Pointer to C type state. */
   GCRef gcroot[GCROOT_MAX];  /* GC roots. */
+  lua_PreFreeUdFunction udmemf; /* Called when user-data memory is about to be freed. */
+  lua_PreCollectWeakUd udweakcf; /* Called when a weak ref to a user-data is about to be cleared. */
 } global_State;
 
 #define mainthread(g)	(&gcref(g->mainthref)->th)

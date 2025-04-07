@@ -2030,6 +2030,19 @@ static void build_subroutines(BuildCtx *ctx)
   |
   |//-- Math library -------------------------------------------------------
   |
+  |.ffunc_2 math_i32mul
+  |  cmp dword [BASE+4], LJ_TISNUM;  jae ->fff_fallback
+  |  cmp dword [BASE+12], LJ_TISNUM;  jae ->fff_fallback
+  |  cvttsd2si RB, qword [BASE]
+  |  cvttsd2si RC, qword [BASE+8]
+  |  imul      RB, RC
+  |  jmp ->fff_resbit
+  |
+  |.ffunc_1 math_i32truncate
+  |  cmp dword [BASE+4], LJ_TISNUM;  jae ->fff_fallback
+  |  cvttsd2si RB, qword [BASE]
+  |  jmp ->fff_resbit
+  |
   |.if not DUALNUM
   |->fff_resi:  // Dummy.
   |.endif

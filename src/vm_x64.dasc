@@ -1668,6 +1668,19 @@ static void build_subroutines(BuildCtx *ctx)
   |
   |//-- Math library -------------------------------------------------------
   |
+  |.ffunc_2 math_i32mul
+  |  checknumtp [BASE], ->fff_fallback
+  |  checknumtp [BASE+8], ->fff_fallback
+  |  cvttsd2si RBd, qword [BASE]
+  |  cvttsd2si RCd, qword [BASE+8]
+  |  imul      RBd, RCd
+  |  jmp ->fff_resbit
+  |
+  |.ffunc_1 math_i32truncate
+  |  checknumtp [BASE], ->fff_fallback
+  |  cvttsd2si RBd, qword [BASE]
+  |  jmp ->fff_resbit
+  |
   |  .ffunc_1 math_abs
   |  mov RB, [BASE]
   |.if DUALNUM

@@ -1322,6 +1322,18 @@ static void build_subroutines(BuildCtx *ctx)
   |
   |//-- Math library -------------------------------------------------------
   |
+  |.ffunc_2 math_i32mul
+  |  checkint  CARG1, ->fff_fallback
+  |  checkint  CARG2, ->fff_fallback
+  |  smull     CARG1, CARG1w, CARG2w
+  |  scvtf     FARG1, CARG1w
+  |  b ->fff_resn
+  |
+  |.ffunc_n math_i32truncate
+  |  fcvtzs    CARG1w, FARG1
+  |  scvtf     FARG1, CARG1w
+  |  b ->fff_resn
+  |
   |.macro math_round, func, round
   |  .ffunc math_ .. func
   |  ldr CARG1, [BASE]

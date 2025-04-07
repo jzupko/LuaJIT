@@ -1354,6 +1354,23 @@ static void build_subroutines(BuildCtx *ctx)
   |
   |//-- Math library -------------------------------------------------------
   |
+  |.if FPU
+  |.ffunc_2 math_i32mul
+  |  checktp       CARG2, LJ_TISNUM
+  |  bne           ->fff_fallback
+  |  checktp       CARG4, LJ_TISNUM
+  |  bne           ->fff_fallback
+  |  smull         CARG1, RC, CARG1, CARG3
+  |  vmov          s0, CARG1
+  |  vcvt.f64.s32  d0, s0
+  |  b ->fff_resd
+  |
+  |.ffunc_d math_i32truncate
+  |  vcvt.s32.f64  s0, d0
+  |  vcvt.f64.s32  d0, s0
+  |  b ->fff_resd
+  |.endif
+  |
   |.macro math_round, func
   |  .ffunc_1 math_ .. func
   |  checktp CARG2, LJ_TISNUM

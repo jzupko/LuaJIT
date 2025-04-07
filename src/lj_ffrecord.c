@@ -507,6 +507,24 @@ static void LJ_FASTCALL recff_getfenv(jit_State *J, RecordFFData *rd)
 
 /* -- Math library fast functions ----------------------------------------- */
 
+static void LJ_FASTCALL recff_math_i32mul(jit_State *J, RecordFFData *rd)
+{
+  TRef tr = J->base[0];
+  TRef tr2 = J->base[1];
+  tr = lj_opt_narrow_toint(J, tr); // convert to int32 to force integer math.
+  tr2 = lj_opt_narrow_toint(J, tr2); // convert to int32 to force integer math.
+  tr = emitir(IRTI(IR_MUL), tr, tr2); // integer multiply
+  J->base[0] = emitir(IRTN(IR_CONV), tr, IRCONV_NUM_INT); // convert back to number.
+  UNUSED(rd);
+}
+static void LJ_FASTCALL recff_math_i32truncate(jit_State *J, RecordFFData *rd)
+{
+  TRef tr = J->base[0];
+  tr = lj_opt_narrow_toint(J, tr); // convert to int32 to truncate.
+  J->base[0] = emitir(IRTN(IR_CONV), tr, IRCONV_NUM_INT); // convert back to number.
+  UNUSED(rd);
+}
+
 static void LJ_FASTCALL recff_math_abs(jit_State *J, RecordFFData *rd)
 {
   TRef tr = lj_ir_tonum(J, J->base[0]);

@@ -180,6 +180,11 @@ static void close_state(lua_State *L)
     g->allocf(g->allocd, G2GG(g), sizeof(GG_State), 0);
 }
 
+static int default_udweakcf(void* p, unsigned int ud)
+{
+	return 1;
+}
+
 #if LJ_64 && !LJ_GC64 && !(defined(LUAJIT_USE_VALGRIND) && defined(LUAJIT_USE_SYSMALLOC))
 lua_State *lj_state_newstate(lua_Alloc f, void *ud)
 #else
@@ -219,12 +224,21 @@ LUA_API lua_State *lua_newstate(lua_Alloc f, void *ud)
   g->gc.stepmul = LUAI_GCMUL;
   lj_dispatch_init((GG_State *)L);
   L->status = LUA_ERRERR+1;  /* Avoid touching the stack upon memory error. */
+  g->udweakcf = default_udweakcf;
   if (lj_vm_cpcall(L, NULL, NULL, cpluaopen) != 0) {
     /* Memory allocation error: free partial state. */
     close_state(L);
     return NULL;
   }
   L->status = LUA_OK;
+  return L;
+}
+
+LUALIB_API lua_State *lua_newstateex(lua_Alloc f, void* ud, lua_PreFreeUdFunction preFunc, lua_PreCollectWeakUd preFuncUd)
+{
+  lua_State *L = lua_newstate(f, ud);
+  G(L)->udmemf = preFunc;
+  if (preFuncUd) { G(L)->udweakcf = preFuncUd; }
   return L;
 }
 

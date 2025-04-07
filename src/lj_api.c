@@ -746,7 +746,18 @@ LUA_API void *lua_newuserdata(lua_State *L, size_t size)
   lj_gc_check(L);
   if (size > LJ_MAX_UDATA)
     lj_err_msg(L, LJ_ERR_UDATAOV);
-  ud = lj_udata_new(L, (MSize)size, getcurrenv(L));
+  ud = lj_udata_new(L, (MSize)size, getcurrenv(L), 0);
+  setudataV(L, L->top, ud);
+  incr_top(L);
+  return uddata(ud);
+}
+LUA_API void *lua_newuserdataex(lua_State *L, size_t size, uint32_t userprivatedata)
+{
+  GCudata *ud;
+  lj_gc_check(L);
+  if (size > LJ_MAX_UDATA)
+    lj_err_msg(L, LJ_ERR_UDATAOV);
+  ud = lj_udata_new(L, (MSize)size, getcurrenv(L), userprivatedata);
   setudataV(L, L->top, ud);
   incr_top(L);
   return uddata(ud);

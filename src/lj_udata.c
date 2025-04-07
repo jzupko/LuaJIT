@@ -10,7 +10,7 @@
 #include "lj_gc.h"
 #include "lj_udata.h"
 
-GCudata *lj_udata_new(lua_State *L, MSize sz, GCtab *env)
+GCudata *lj_udata_new(lua_State *L, MSize sz, GCtab *env, uint32_t userprivatedata)
 {
   GCudata *ud = lj_mem_newt(L, sizeof(GCudata) + sz, GCudata);
   global_State *g = G(L);
@@ -18,6 +18,7 @@ GCudata *lj_udata_new(lua_State *L, MSize sz, GCtab *env)
   ud->gct = ~LJ_TUDATA;
   ud->udtype = UDTYPE_USERDATA;
   ud->len = sz;
+  ud->userprivatedata = userprivatedata;
   /* NOBARRIER: The GCudata is new (marked white). */
   setgcrefnull(ud->metatable);
   setgcref(ud->env, obj2gco(env));
@@ -29,6 +30,7 @@ GCudata *lj_udata_new(lua_State *L, MSize sz, GCtab *env)
 
 void LJ_FASTCALL lj_udata_free(global_State *g, GCudata *ud)
 {
+  if (g->udmemf) { g->udmemf(ud + 1, ud->userprivatedata); }
   lj_mem_free(g, ud, sizeudata(ud));
 }
 

@@ -129,6 +129,9 @@ size_t lj_gc_separateudata(global_State *g, int all)
   GCRef *p = &mainthread(g)->nextgc;
   GCobj *o;
   while ((o = gcref(*p)) != NULL) {
+    if (!all && iswhite(o) && !g->udweakcf(gco2ud(o) + 1, gco2ud(o)->userprivatedata)) {
+      gc_mark(g, o);
+    }
     if (!(iswhite(o) || all) || isfinalized(gco2ud(o))) {
       p = &o->gch.nextgc;  /* Nothing to do. */
     } else if (!lj_meta_fastg(g, tabref(gco2ud(o)->metatable), MM_gc)) {
