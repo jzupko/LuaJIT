@@ -16,7 +16,8 @@
 @setlocal
 @rem Add more debug flags here, e.g. DEBUGCFLAGS=/DLUA_USE_ASSERT
 @set DEBUGCFLAGS=
-@set LJCOMPILE=cl /nologo /c /O2 /W3 /D_CRT_SECURE_NO_DEPRECATE /D_CRT_STDIO_INLINE=__declspec(dllexport)__inline
+@set RELEASEDIR=Release
+@set LJCOMPILE=cl /nologo /c /O2 /W3 /D_CRT_SECURE_NO_DEPRECATE /D_CRT_STDIO_INLINE=__declspec(dllexport)__inline /DLUAJIT_USE_SYSMALLOC /DLUAJIT_ENABLE_LUA52COMPAT /DLUAJIT_DISABLE_JIT /DLUAJIT_DISABLE_FFI
 @set LJDYNBUILD=/DLUA_BUILD_AS_DLL /MD
 @set LJDYNBUILD_DEBUG=/DLUA_BUILD_AS_DLL /MDd 
 @set LJCOMPILETARGET=/Zi
@@ -43,13 +44,15 @@ if exist minilua.exe.manifest^
   %LJMT% -manifest minilua.exe.manifest -outputresource:minilua.exe
 @endlocal
 
-@set DASMFLAGS=-D WIN -D JIT -D FFI -D ENDIAN_LE -D FPU -D P64
+@set DASMFLAGS=-D WIN -D ENDIAN_LE -D FPU -D P64
 @set LJARCH=x64
+@set TARGETDIR=x64
 @minilua
 @if errorlevel 8 goto :NO32
 @set DASC=vm_x86.dasc
-@set DASMFLAGS=-D WIN -D JIT -D FFI -D ENDIAN_LE -D FPU
+@set DASMFLAGS=-D WIN -D ENDIAN_LE -D FPU
 @set LJARCH=x86
+@set TARGETDIR=Win32
 @set LJCOMPILE=%LJCOMPILE% /arch:SSE2
 @goto :DA
 :NO32
@@ -63,6 +66,7 @@ if exist minilua.exe.manifest^
 @shift
 @set DASC=vm_x86.dasc
 @set LJCOMPILE=%LJCOMPILE% /DLUAJIT_DISABLE_GC64
+@set RELEASEDIR=ReleaseGC64
 :DA
 minilua %DASM% -LN %DASMFLAGS% -o host\buildvm_arch.h %DASC%
 @if errorlevel 1 goto :BAD
@@ -143,11 +147,17 @@ if exist %LJDLLNAME%.manifest^
 if exist luajit.exe.manifest^
   %LJMT% -manifest luajit.exe.manifest -outputresource:luajit.exe
 
-@del *.obj *.manifest minilua.exe buildvm.exe
+@del *.obj *.manifest minilua.* buildvm.* luajit.exp luajit.lib
 @del host\buildvm_arch.h
 @del lj_bcdef.h lj_ffdef.h lj_libdef.h lj_recdef.h lj_folddef.h
 @echo.
 @echo === Successfully built LuaJIT for Windows/%LJARCH% ===
+
+@mkdir %~dp0..\bin\%TARGETDIR%\%RELEASEDIR%
+@move luajit.exe %~dp0..\bin\%TARGETDIR%\%RELEASEDIR%\
+@mkdir %~dp0..\lib\%TARGETDIR%\%RELEASEDIR%
+@move lua51.lib %~dp0..\lib\%TARGETDIR%\%RELEASEDIR%
+@copy %~dp0jit\*.lua %~dp0..\bin\%TARGETDIR%\%RELEASEDIR%\lua\jit\ /Y
 
 @goto :END
 :SETHOSTVARS
